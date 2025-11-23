@@ -1,7 +1,6 @@
 import React from 'react'
 import '../styles.css'
 import { ThemeProvider } from '../components/ThemeProvider'
-import { ModeToggle } from '../components/ModeToggle'
 import AetherShareQueryClientProvider from '../components/QueryClientProvider'
 import AuroraBackground from '../components/AuroraBackground'
 import { Viewport } from 'next'
@@ -39,7 +38,6 @@ export default function RootLayout({
             <AuroraBackground />
             <AetherShareQueryClientProvider>
               <main className="relative z-10">{children}</main>
-              <ModeToggle />
             </AetherShareQueryClientProvider>
           </ThemeProvider>
         </body>
