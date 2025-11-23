@@ -5,7 +5,7 @@ const { ExpressPeerServer } = require('peer')
 const app = express();
 const server = app.listen(9000);
 const peerServer = ExpressPeerServer(server, {
-  path: '/filepizza'
+  path: '/beamdrop'
 })
 
 app.use('/peerjs', peerServer)

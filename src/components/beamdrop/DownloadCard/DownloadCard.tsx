@@ -1,18 +1,18 @@
 'use client'
 
-import React, { JSX, useState, useCallback, useEffect } from 'react'
-import { useDownloader } from '../hooks/useDownloader'
-import PasswordField from './PasswordField'
-import UnlockButton from './UnlockButton'
-import Loading from './Loading'
-import UploadFileList from './UploadFileList'
-import DownloadButton from './DownloadButton'
-import StopButton from './StopButton'
-import ProgressBar from './ProgressBar'
-import TitleText from './TitleText'
-import ReturnHome from './ReturnHome'
-import { pluralize } from '../utils/pluralize'
-import { ErrorMessage } from './ErrorMessage'
+import React, { JSX, useState, useCallback } from 'react'
+import { useDownloader } from '../../../hooks/useDownloader'
+import PasswordField from '../../PasswordField'
+import UnlockButton from '../../UnlockButton'
+import UploadFileList from '../../UploadFileList'
+import DownloadButton from '../../DownloadButton'
+import StopButton from '../../StopButton'
+import ProgressBar from '../../ProgressBar'
+import { pluralize } from '../../../utils/pluralize'
+import { ErrorMessage } from '../../ErrorMessage'
+import { Mascot } from '../Mascot/Mascot'
+import { BeamProgress } from '../TransferCard/BeamProgress'
+import ReturnHome from '../../ReturnHome'
 
 interface FileInfo {
   fileName: string
@@ -27,7 +27,7 @@ export function ConnectingToUploader({
 }): JSX.Element {
   const [showTroubleshooting, setShowTroubleshooting] = useState(false)
 
-  useEffect(() => {
+  React.useEffect(() => {
     const timer = setTimeout(() => {
       setShowTroubleshooting(true)
     }, showTroubleshootingAfter)
@@ -35,46 +35,51 @@ export function ConnectingToUploader({
   }, [showTroubleshootingAfter])
 
   if (!showTroubleshooting) {
-    return <Loading text="Connecting to uploader..." />
+    return (
+      <div className="flex flex-col items-center space-y-6 py-12">
+        <Mascot animated={true} />
+        <p className="text-white/90 text-lg">Beam incoming...</p>
+      </div>
+    )
   }
 
   return (
     <>
-      <Loading text="Connecting to uploader..." />
+      <div className="flex flex-col items-center space-y-6 py-12">
+        <Mascot animated={true} />
+        <p className="text-white/90 text-lg">Beam incoming...</p>
+      </div>
 
-      <div className="glass-strong rounded-xl p-8 max-w-md w-full">
+      <div className="glass-soft rounded-2xl p-8 max-w-md w-full">
         <h2 className="text-xl font-bold mb-4 text-white">
           Having trouble connecting?
         </h2>
 
         <div className="space-y-4 text-white/90">
-          <p>
-            BeamDrop uses direct peer-to-peer connections, but sometimes the
-            connection can get stuck. Here are some possible reasons this can
-            happen:
+          <p className="text-sm">
+            BeamDrop uses direct peer-to-peer connections. Sometimes the panda
+            needs a moment to focus. Here are some possible reasons:
           </p>
 
           <ul className="list-none space-y-3">
-            <li className="flex items-start gap-3 px-4 py-2 rounded-lg glass">
+            <li className="flex items-start gap-3 px-4 py-2 rounded-lg glass-soft">
               <span className="text-base">🚪</span>
               <span className="text-sm">
-                The uploader may have closed their browser, lost connectivity,
-                or stopped the upload. BeamDrop requires the uploader to stay
-                online continuously because files are transferred directly
-                between browsers.
+                The uploader may have closed their browser or lost connectivity.
+                BeamDrop requires the uploader to stay online.
               </span>
             </li>
-            <li className="flex items-start gap-3 px-4 py-2 rounded-lg glass">
+            <li className="flex items-start gap-3 px-4 py-2 rounded-lg glass-soft">
               <span className="text-base">🔒</span>
               <span className="text-sm">
-                Your network might have strict firewalls or NAT settings, such
-                as having UPnP disabled
+                Your network might have strict firewalls or NAT settings.
               </span>
             </li>
-            <li className="flex items-start gap-3 px-4 py-2 rounded-lg glass">
+            <li className="flex items-start gap-3 px-4 py-2 rounded-lg glass-soft">
               <span className="text-base">🌐</span>
               <span className="text-sm">
-                Some corporate or school networks block peer-to-peer connections
+                Some corporate or school networks block peer-to-peer
+                connections.
               </span>
             </li>
           </ul>
@@ -95,10 +100,16 @@ export function DownloadComplete({
   totalSize: number
 }): JSX.Element {
   return (
-    <>
-      <TitleText>
-        You downloaded {pluralize(filesInfo.length, 'file', 'files')}.
-      </TitleText>
+    <div className="flex flex-col items-center space-y-6 w-full">
+      <Mascot animated={false} />
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-white mb-2">
+          Beamed! 🎉
+        </h2>
+        <p className="text-white/80">
+          You downloaded {pluralize(filesInfo.length, 'file', 'files')}.
+        </p>
+      </div>
       <div className="flex flex-col space-y-5 w-full">
         <UploadFileList files={filesInfo} />
         <div className="w-full">
@@ -106,7 +117,7 @@ export function DownloadComplete({
         </div>
         <ReturnHome />
       </div>
-    </>
+    </div>
   )
 }
 
@@ -121,21 +132,29 @@ export function DownloadInProgress({
   totalSize: number
   onStop: () => void
 }): JSX.Element {
+  const percentage = totalSize > 0 ? (bytesDownloaded / totalSize) * 100 : 0
+
   return (
-    <>
-      <TitleText>
-        You are downloading {pluralize(filesInfo.length, 'file', 'files')}.
-      </TitleText>
+    <div className="flex flex-col items-center space-y-6 w-full">
+      <Mascot animated={true} />
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-white mb-2">
+          Beaming... the panda is focusing.
+        </h2>
+        <p className="text-white/80">
+          You are downloading {pluralize(filesInfo.length, 'file', 'files')}.
+        </p>
+      </div>
       <div className="flex flex-col space-y-5 w-full">
         <UploadFileList files={filesInfo} />
         <div className="w-full">
-          <ProgressBar value={bytesDownloaded} max={totalSize} />
+          <BeamProgress value={percentage / 100} />
         </div>
         <div className="flex justify-center w-full">
           <StopButton onClick={onStop} isDownloading />
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -147,16 +166,22 @@ export function ReadyToDownload({
   onStart: () => void
 }): JSX.Element {
   return (
-    <>
-      <TitleText>
-        You are about to start downloading{' '}
-        {pluralize(filesInfo.length, 'file', 'files')}.
-      </TitleText>
+    <div className="flex flex-col items-center space-y-6 w-full">
+      <Mascot animated={false} />
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-white mb-2">
+          Beam incoming! 📡
+        </h2>
+        <p className="text-white/80">
+          You are about to start downloading{' '}
+          {pluralize(filesInfo.length, 'file', 'files')}.
+        </p>
+      </div>
       <div className="flex flex-col space-y-5 w-full">
         <UploadFileList files={filesInfo} />
         <DownloadButton onClick={onStart} />
       </div>
-    </>
+    </div>
   )
 }
 
@@ -177,9 +202,17 @@ export function PasswordEntry({
   )
 
   return (
-    <>
-      <TitleText>This download requires a password.</TitleText>
-      <div className="flex flex-col space-y-5 w-full">
+    <div className="flex flex-col items-center space-y-6 w-full">
+      <Mascot animated={false} />
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-white mb-2">
+          This beam is protected
+        </h2>
+        <p className="text-white/80">
+          Enter the password to unlock this download.
+        </p>
+      </div>
+      <div className="flex flex-col space-y-5 w-full max-w-md">
         <form
           action="#"
           method="post"
@@ -198,11 +231,11 @@ export function PasswordEntry({
         </form>
       </div>
       {errorMessage && <ErrorMessage message={errorMessage} />}
-    </>
+    </div>
   )
 }
 
-export default function Downloader({
+export function DownloadCard({
   uploaderPeerID,
 }: {
   uploaderPeerID: string
@@ -240,6 +273,12 @@ export default function Downloader({
   if (errorMessage) {
     return (
       <>
+        <div className="flex flex-col items-center space-y-4">
+          <Mascot animated={false} />
+          <p className="text-white/90 text-lg">
+            Oops — the panda tripped. Try again.
+          </p>
+        </div>
         <ErrorMessage message={errorMessage} />
         <ReturnHome />
       </>
@@ -265,5 +304,11 @@ export default function Downloader({
     return <ConnectingToUploader />
   }
 
-  return <Loading text="Uh oh... Something went wrong." />
+  return (
+    <div className="flex flex-col items-center space-y-6 py-12">
+      <Mascot animated={false} />
+      <p className="text-white/90 text-lg">Uh oh... Something went wrong.</p>
+    </div>
+  )
 }
+

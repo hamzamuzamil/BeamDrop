@@ -93,7 +93,7 @@ export default function ReportTermsViolationButton({
 
             <div className="space-y-4 text-white/90">
               <p>
-                Before reporting, please note our AetherShare terms:
+                Before reporting, please note our BeamDrop terms:
               </p>
 
               <ul className="list-none space-y-3">

@@ -1,0 +1,59 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pandaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8F4F8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C2E9FB;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Panda body -->
+  <circle cx="60" cy="70" r="35" fill="url(#pandaGradient)" stroke="#A1C4FD" stroke-width="2"/>
+  
+  <!-- Panda head -->
+  <circle cx="60" cy="40" r="28" fill="url(#pandaGradient)" stroke="#A1C4FD" stroke-width="2"/>
+  
+  <!-- Left ear -->
+  <circle cx="45" cy="25" r="12" fill="#2C2C2C"/>
+  <circle cx="45" cy="25" r="8" fill="#E8F4F8"/>
+  
+  <!-- Right ear -->
+  <circle cx="75" cy="25" r="12" fill="#2C2C2C"/>
+  <circle cx="75" cy="25" r="8" fill="#E8F4F8"/>
+  
+  <!-- Left eye patch -->
+  <ellipse cx="50" cy="38" rx="10" ry="12" fill="#2C2C2C"/>
+  <circle cx="50" cy="38" r="5" fill="#FFFFFF"/>
+  <circle cx="50" cy="38" r="3" fill="#2C2C2C"/>
+  
+  <!-- Right eye patch -->
+  <ellipse cx="70" cy="38" rx="10" ry="12" fill="#2C2C2C"/>
+  <circle cx="70" cy="38" r="5" fill="#FFFFFF"/>
+  <circle cx="70" cy="38" r="3" fill="#2C2C2C"/>
+  
+  <!-- Nose -->
+  <ellipse cx="60" cy="48" rx="4" ry="3" fill="#2C2C2C"/>
+  
+  <!-- Mouth -->
+  <path d="M 60 48 Q 55 52 55 55" stroke="#2C2C2C" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M 60 48 Q 65 52 65 55" stroke="#2C2C2C" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <!-- Beam effect (animated) -->
+  <g opacity="0.6">
+    <path d="M 60 20 L 50 10 M 60 20 L 70 10" stroke="#A1C4FD" stroke-width="3" stroke-linecap="round">
+      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" repeatCount="indefinite"/>
+    </path>
+    <circle cx="60" cy="15" r="3" fill="#C2E9FB">
+      <animate attributeName="r" values="3;5;3" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Floating animation -->
+  <animateTransform
+    attributeName="transform"
+    type="translate"
+    values="0,0; 0,-5; 0,0"
+    dur="3s"
+    repeatCount="indefinite"/>
+</svg>
+

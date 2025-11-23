@@ -1,4 +1,4 @@
-import toppings from './toppings'
+import words from './words'
 
 export default {
   redisURL: 'redis://localhost:6379/0',
@@ -22,7 +22,7 @@ export default {
   },
   longSlug: {
     numWords: 4,
-    words: toppings,
+    words: words,
     maxAttempts: 8,
   },
 }

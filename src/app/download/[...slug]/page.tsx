@@ -1,11 +1,11 @@
 import { JSX } from 'react'
 import { notFound } from 'next/navigation'
 import { getOrCreateChannelRepo } from '../../../channel'
-import Spinner from '../../../components/Spinner'
-import Wordmark from '../../../components/Wordmark'
-import Downloader from '../../../components/Downloader'
+import { Logo } from '../../../components/beamdrop/Logo/Logo'
+import { DownloadCard } from '../../../components/beamdrop/DownloadCard/DownloadCard'
 import WebRTCPeerProvider from '../../../components/WebRTCProvider'
 import ReportTermsViolationButton from '../../../components/ReportTermsViolationButton'
+import { Hero } from '../../../components/beamdrop/Layout/Hero/Hero'
 
 const normalizeSlug = (rawSlug: string | string[]): string => {
   if (typeof rawSlug === 'string') {
@@ -29,18 +29,18 @@ export default async function DownloadPage({
   }
 
   return (
-    <div className="flex flex-col items-center space-y-5 py-10 max-w-2xl mx-auto px-4">
-      <Spinner direction="down" />
-      <Wordmark />
-      <div className="glass-strong rounded-2xl p-6 w-full">
+    <Hero>
+      <div className="w-full">
         <WebRTCPeerProvider>
-          <Downloader uploaderPeerID={channel.uploaderPeerID} />
-          <ReportTermsViolationButton
-            uploaderPeerID={channel.uploaderPeerID}
-            slug={slug}
-          />
+          <DownloadCard uploaderPeerID={channel.uploaderPeerID} />
+          <div className="mt-6 flex justify-center">
+            <ReportTermsViolationButton
+              uploaderPeerID={channel.uploaderPeerID}
+              slug={slug}
+            />
+          </div>
         </WebRTCPeerProvider>
       </div>
-    </div>
+    </Hero>
   )
 }

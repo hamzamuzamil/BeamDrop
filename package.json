@@ -1,10 +1,10 @@
 {
-  "name": "aethershare",
+  "name": "beamdrop",
   "version": "2.0.0",
-  "description": "Free peer-to-peer file transfers in your browser.",
-  "author": "Alex Kern <alex@kern.io> (http://kern.io)",
+  "description": "BeamDrop - Drop it. Beam it. Done. Peer-to-peer file transfers in your browser.",
+  "author": "Hamza Muzamil",
   "license": "BSD-3-Clause",
-  "homepage": "https://github.com/kern/filepizza",
+  "homepage": "https://github.com/hamzamuzamil/fileshare",
   "engines": {
     "node": "18.x"
   },
@@ -34,10 +34,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:kern/filepizza.git"
+    "url": "git@github.com:hamzamuzamil/fileshare.git"
   },
   "bugs": {
-    "url": "https://github.com/kern/filepizza/issues"
+    "url": "https://github.com/hamzamuzamil/fileshare/issues"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.11",

@@ -4,7 +4,7 @@ services:
     ports:
       - 127.0.0.1:6379:6379
     networks:
-      - filepizza
+      - beamdrop
     volumes:
       - redis_data:/data
   coturn:
@@ -20,10 +20,10 @@ services:
       - DETECT_RELAY_IP=yes
     command: -n --log-file=stdout --redis-userdb="ip=redis connect_timeout=30" --min-port=60000 --max-port=60128
     networks:
-      - filepizza
-  filepizza:
+      - beamdrop
+  beamdrop:
     build: .
-    image: kern/filepizza:latest
+    image: hamzamuzamil/beamdrop:latest
     ports:
       - 0.0.0.0:80:80
     environment:
@@ -31,14 +31,14 @@ services:
       - REDIS_URL=redis://redis:6379
       - COTURN_ENABLED=true
     networks:
-      - filepizza
+      - beamdrop
     depends_on:
       - redis
     env_file:
       - .env
 
 networks:
-  filepizza:
+  beamdrop:
     driver: bridge
 
 volumes:

@@ -2,38 +2,20 @@
 
 import React, { JSX, useCallback, useState } from 'react'
 import WebRTCPeerProvider from '../components/WebRTCProvider'
-import DropZone from '../components/DropZone'
+import { DropZone } from '../components/beamdrop/DropZone/DropZone'
 import UploadFileList from '../components/UploadFileList'
-import Uploader from '../components/Uploader'
+import { TransferCard } from '../components/beamdrop/TransferCard/TransferCard'
 import PasswordField from '../components/PasswordField'
 import StartButton from '../components/StartButton'
 import { UploadedFile } from '../types'
-import Spinner from '../components/Spinner'
-import Wordmark from '../components/Wordmark'
 import CancelButton from '../components/CancelButton'
 import { useMemo } from 'react'
 import { getFileName } from '../fs'
 import TitleText from '../components/TitleText'
-import SubtitleText from '../components/SubtitleText'
 import { pluralize } from '../utils/pluralize'
-import TermsAcceptance from '../components/TermsAcceptance'
+import { TermsAcceptance } from '../components/beamdrop/TermsModal/TermsModal'
 import AddFilesButton from '../components/AddFilesButton'
-
-function PageWrapper({ children }: { children: React.ReactNode }): JSX.Element {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] py-12 px-4 w-full">
-      <div className="flex flex-col items-center space-y-8 max-w-3xl w-full">
-        <div className="flex flex-col items-center space-y-4">
-          <Spinner direction="up" />
-          <Wordmark />
-        </div>
-        <div className="glass-strong rounded-2xl p-8 md:p-10 w-full shadow-2xl space-y-6">
-          {children}
-        </div>
-      </div>
-    </div>
-  )
-}
+import { Hero } from '../components/beamdrop/Layout/Hero/Hero'
 
 function InitialState({
   onDrop,
@@ -41,17 +23,23 @@ function InitialState({
   onDrop: (files: UploadedFile[]) => void
 }): JSX.Element {
   return (
-    <PageWrapper>
+    <Hero>
       <div className="flex flex-col items-center space-y-8 w-full">
-        <div className="flex flex-col items-center space-y-2">
-          <TitleText>Peer-to-peer file transfers in your browser.</TitleText>
+        <div className="flex flex-col items-center space-y-4">
+          <TitleText>
+            Drop a file and the panda will beam it.
+          </TitleText>
+          <p className="text-white/70 text-center text-sm">
+            Peer-to-peer file transfers in your browser. No servers, no storage,
+            just direct beaming.
+          </p>
         </div>
         <div className="w-full max-w-md">
           <DropZone onDrop={onDrop} />
         </div>
         <TermsAcceptance />
       </div>
-    </PageWrapper>
+    </Hero>
   )
 }
 
@@ -83,11 +71,10 @@ function ConfirmUploadState({
 }): JSX.Element {
   const fileListData = useUploaderFileListData(uploadedFiles)
   return (
-    <PageWrapper>
+    <Hero>
       <div className="flex flex-col items-center space-y-6 w-full">
         <TitleText>
-          You are about to start uploading{' '}
-          {pluralize(uploadedFiles.length, 'file', 'files')}.{' '}
+          You are about to beam {pluralize(uploadedFiles.length, 'file', 'files')}.{' '}
           <AddFilesButton onAdd={onAddFiles} />
         </TitleText>
         <div className="w-full">
@@ -101,7 +88,7 @@ function ConfirmUploadState({
           <StartButton onClick={onStart} />
         </div>
       </div>
-    </PageWrapper>
+    </Hero>
   )
 }
 
@@ -116,26 +103,27 @@ function UploadingState({
 }): JSX.Element {
   const fileListData = useUploaderFileListData(uploadedFiles)
   return (
-    <PageWrapper>
+    <Hero>
       <div className="flex flex-col items-center space-y-6 w-full">
         <div className="flex flex-col items-center space-y-2">
           <TitleText>
-            You are uploading {pluralize(uploadedFiles.length, 'file', 'files')}.
+            Beaming {pluralize(uploadedFiles.length, 'file', 'files')}...
           </TitleText>
-          <SubtitleText>
-            Leave this tab open. AetherShare does not store files.
-          </SubtitleText>
+          <p className="text-white/70 text-center text-sm">
+            Leave this tab open. BeamDrop does not store files — the panda beams
+            directly between browsers.
+          </p>
         </div>
         <div className="w-full">
           <UploadFileList files={fileListData} />
         </div>
         <div className="w-full">
           <WebRTCPeerProvider>
-            <Uploader files={uploadedFiles} password={password} onStop={onStop} />
+            <TransferCard files={uploadedFiles} password={password} onStop={onStop} />
           </WebRTCPeerProvider>
         </div>
       </div>
-    </PageWrapper>
+    </Hero>
   )
 }
 

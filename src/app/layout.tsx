@@ -7,14 +7,17 @@ import { Viewport } from 'next'
 import { ViewTransitions } from 'next-view-transitions'
 
 export const metadata = {
-  title: 'AetherShare • Instant file transfers',
-  description: 'Peer-to-peer file transfers in your web browser.',
+  title: 'BeamDrop • Drop it. Beam it. Done.',
+  description: 'Peer-to-peer file transfers in your web browser. Drop it. Beam it. Done.',
   charSet: 'utf-8',
+  icons: {
+    icon: '/assets/favicon-beamdrop.svg',
+    apple: '/assets/favicon-beamdrop.svg',
+  },
   openGraph: {
-    url: 'https://file.pizza',
-    title: 'AetherShare • Instant file transfers',
-    description: 'Peer-to-peer file transfers in your web browser.',
-    images: [{ url: 'https://file.pizza/images/fb.png' }],
+    url: 'https://beamdrop.app',
+    title: 'BeamDrop • Drop it. Beam it. Done.',
+    description: 'Peer-to-peer file transfers in your web browser. Drop it. Beam it. Done.',
   },
 }
 
