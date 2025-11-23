@@ -1,57 +1,71 @@
-# Vercel KV Setup Instructions
+# Redis Setup Instructions for Vercel
 
-This project uses Vercel KV for persistent channel storage on Vercel deployments. Follow these steps to set it up:
+This project uses Redis for persistent channel storage on Vercel deployments. Follow these steps to set it up using **Upstash Redis** (recommended) from the Vercel Marketplace.
 
-## Step 1: Create Vercel KV Database
+## Step 1: Create Upstash Redis Database
 
 1. Go to your Vercel Dashboard: https://vercel.com/dashboard
 2. Select your project: `fileshare`
 3. Go to the **Storage** tab
 4. Click **Create Database**
-5. Select **KV** (Key-Value store)
-6. Give it a name (e.g., `fileshare-kv`)
-7. Click **Create**
+5. You'll see the Marketplace Database Providers modal
+6. **Select "Upstash"** - "Serverless DB (Redis, Vector, Queue, Search)"
+7. Click **Continue**
 
-## Step 2: Link KV to Your Project
+## Step 2: Configure Upstash Redis
 
-1. After creating the KV database, click **Connect** or **Link to Project**
-2. Select your `fileshare` project
-3. Vercel will automatically add the environment variables:
-   - `KV_REST_API_URL`
-   - `KV_REST_API_TOKEN`
-   - `KV_URL` (optional, for Redis protocol)
+1. Follow the Upstash setup wizard:
+   - Choose a name for your database (e.g., `fileshare-redis`)
+   - Select a region (choose closest to your users)
+   - Click **Create**
+2. **Upstash will automatically:**
+   - Create the Redis database
+   - Add environment variables to your Vercel project:
+     - `UPSTASH_REDIS_REST_URL`
+     - `UPSTASH_REDIS_REST_TOKEN`
+   - Link it to your project
 
-## Step 3: Verify Environment Variables
+**That's it!** The code automatically detects these environment variables and uses Upstash Redis.
 
-1. Go to your project **Settings** → **Environment Variables**
-2. Verify these variables are present:
-   - `KV_REST_API_URL`
-   - `KV_REST_API_TOKEN`
+## Step 3: Redeploy
 
-## Step 4: Redeploy
-
-1. After linking the KV database, Vercel will automatically trigger a new deployment
-2. Or you can manually trigger a redeploy from the **Deployments** tab
+1. After Upstash is linked, Vercel will automatically trigger a new deployment
+2. Or manually trigger a redeploy from the **Deployments** tab
 
 ## How It Works
 
-The application automatically detects Vercel KV and uses it for channel storage:
-- **Priority 1**: Vercel KV (if `KV_URL` or `KV_REST_API_URL` is set)
-- **Priority 2**: Redis (if `REDIS_URL` is set)
-- **Priority 3**: In-memory (fallback, only works within same function invocation)
+The application automatically detects and uses Redis:
+- **Priority 1**: Upstash Redis (if `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set) ✅ **Recommended**
+- **Priority 2**: Standard Redis (if `REDIS_URL` is set)
+- **Priority 3**: In-memory (fallback) - **Only works within same function invocation** (not suitable for production)
 
 ## Testing
 
 After deployment, test file sharing:
 1. Upload a file on the main page
 2. Copy the share link
-3. Open the link in a new tab/browser
-4. The download should work because channels are now persisted in Vercel KV
+3. Open the link in a new tab/browser (or wait a few seconds)
+4. The download should work because channels are now persisted in Redis!
 
 ## Pricing
 
-- **Hobby Plan**: 1 database, 30,000 requests/month, 256 MB storage
-- **Pro Plan**: 1 database, 150,000 requests/month, 512 MB storage
+**Upstash Redis (Free Tier):**
+- 10,000 commands per day
+- 256 MB storage
+- Perfect for testing and moderate use
 
-For this file sharing app, the Hobby plan should be sufficient for testing and moderate use.
+**Upstash Redis (Pay-as-you-go):**
+- $0.20 per 100K commands
+- $0.20 per GB storage
+- Very affordable for production use
 
+## Troubleshooting
+
+If downloads still don't work:
+1. Check Vercel deployment logs to see which storage is being used
+   - Look for: `[ChannelRepo] Using Redis storage`
+2. Verify environment variables are set:
+   - Go to **Settings** → **Environment Variables**
+   - Check that `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` exist
+3. Check that the Upstash database is active in the Vercel Storage tab
+4. Check Vercel build logs for any Redis connection errors

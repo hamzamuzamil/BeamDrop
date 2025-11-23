@@ -4,7 +4,6 @@ import { Redis, getRedisClient } from './redisClient'
 import { generateShortSlug, generateLongSlug } from './slugs'
 import crypto from 'crypto'
 import { z } from 'zod'
-import { kv } from '@vercel/kv'
 
 export type Channel = {
   secret?: string
@@ -210,10 +209,19 @@ export class MemoryChannelRepo implements ChannelRepo {
 }
 
 export class RedisChannelRepo implements ChannelRepo {
-  client: Redis
+  client: Redis | any // Can be ioredis Redis or Upstash Redis
 
   constructor() {
     this.client = getRedisClient()
+  }
+
+  // Helper to check if using Upstash Redis (has different API)
+  private isUpstash(): boolean {
+    return (
+      this.client &&
+      typeof this.client.set === 'function' &&
+      !('setex' in this.client)
+    )
   }
 
   async createChannel(
@@ -221,10 +229,16 @@ export class RedisChannelRepo implements ChannelRepo {
     ttl: number = config.channel.ttl,
   ): Promise<Channel> {
     const shortSlug = await generateShortSlugUntilUnique(
-      async (key) => (await this.client.get(key)) !== null,
+      async (key) => {
+        const value = await this.client.get(key)
+        return value !== null && value !== undefined
+      },
     )
     const longSlug = await generateLongSlugUntilUnique(
-      async (key) => (await this.client.get(key)) !== null,
+      async (key) => {
+        const value = await this.client.get(key)
+        return value !== null && value !== undefined
+      },
     )
 
     const channel: Channel = {
@@ -235,8 +249,19 @@ export class RedisChannelRepo implements ChannelRepo {
     }
     const channelStr = serializeChannel(channel)
 
-    await this.client.setex(getLongSlugKey(longSlug), ttl, channelStr)
-    await this.client.setex(getShortSlugKey(shortSlug), ttl, channelStr)
+    if (this.isUpstash()) {
+      // Upstash Redis uses set with ex option
+      await this.client.set(getLongSlugKey(longSlug), channelStr, {
+        ex: ttl,
+      })
+      await this.client.set(getShortSlugKey(shortSlug), channelStr, {
+        ex: ttl,
+      })
+    } else {
+      // Standard Redis uses setex
+      await this.client.setex(getLongSlugKey(longSlug), ttl, channelStr)
+      await this.client.setex(getShortSlugKey(shortSlug), ttl, channelStr)
+    }
 
     return channel
   }
@@ -245,12 +270,16 @@ export class RedisChannelRepo implements ChannelRepo {
     slug: string,
     scrubSecret = false,
   ): Promise<Channel | null> {
-    const shortChannelStr = await this.client.get(getShortSlugKey(slug))
+    const shortChannelStr = (await this.client.get(
+      getShortSlugKey(slug),
+    )) as string | null
     if (shortChannelStr) {
       return deserializeChannel(shortChannelStr, scrubSecret)
     }
 
-    const longChannelStr = await this.client.get(getLongSlugKey(slug))
+    const longChannelStr = (await this.client.get(
+      getLongSlugKey(slug),
+    )) as string | null
     if (longChannelStr) {
       return deserializeChannel(longChannelStr, scrubSecret)
     }
@@ -268,8 +297,21 @@ export class RedisChannelRepo implements ChannelRepo {
       return false
     }
 
-    await this.client.expire(getLongSlugKey(channel.longSlug), ttl)
-    await this.client.expire(getShortSlugKey(channel.shortSlug), ttl)
+    const channelStr = serializeChannel(channel)
+
+    if (this.isUpstash()) {
+      // Upstash: re-set with new TTL
+      await this.client.set(getLongSlugKey(channel.longSlug), channelStr, {
+        ex: ttl,
+      })
+      await this.client.set(getShortSlugKey(channel.shortSlug), channelStr, {
+        ex: ttl,
+      })
+    } else {
+      // Standard Redis: use expire
+      await this.client.expire(getLongSlugKey(channel.longSlug), ttl)
+      await this.client.expire(getShortSlugKey(channel.shortSlug), ttl)
+    }
 
     return true
   }
@@ -285,97 +327,18 @@ export class RedisChannelRepo implements ChannelRepo {
   }
 }
 
-export class VercelKVChannelRepo implements ChannelRepo {
-  async createChannel(
-    uploaderPeerID: string,
-    ttl: number = config.channel.ttl,
-  ): Promise<Channel> {
-    const shortSlug = await generateShortSlugUntilUnique(
-      async (key) => (await kv.get(key)) !== null,
-    )
-    const longSlug = await generateLongSlugUntilUnique(
-      async (key) => (await kv.get(key)) !== null,
-    )
-
-    const channel: Channel = {
-      secret: crypto.randomUUID(),
-      longSlug,
-      shortSlug,
-      uploaderPeerID,
-    }
-    const channelStr = serializeChannel(channel)
-
-    // Vercel KV uses set with ex option for expiration (in seconds)
-    await kv.set(getLongSlugKey(longSlug), channelStr, { ex: ttl })
-    await kv.set(getShortSlugKey(shortSlug), channelStr, { ex: ttl })
-
-    return channel
-  }
-
-  async fetchChannel(
-    slug: string,
-    scrubSecret = false,
-  ): Promise<Channel | null> {
-    const shortChannelStr = (await kv.get(getShortSlugKey(slug))) as
-      | string
-      | null
-    if (shortChannelStr) {
-      return deserializeChannel(shortChannelStr, scrubSecret)
-    }
-
-    const longChannelStr = (await kv.get(getLongSlugKey(slug))) as
-      | string
-      | null
-    if (longChannelStr) {
-      return deserializeChannel(longChannelStr, scrubSecret)
-    }
-
-    return null
-  }
-
-  async renewChannel(
-    slug: string,
-    secret: string,
-    ttl: number = config.channel.ttl,
-  ): Promise<boolean> {
-    const channel = await this.fetchChannel(slug)
-    if (!channel || channel.secret !== secret) {
-      return false
-    }
-
-    // Re-set with new TTL
-    const channelStr = serializeChannel(channel)
-    await kv.set(getLongSlugKey(channel.longSlug), channelStr, { ex: ttl })
-    await kv.set(getShortSlugKey(channel.shortSlug), channelStr, { ex: ttl })
-
-    return true
-  }
-
-  async destroyChannel(slug: string): Promise<void> {
-    const channel = await this.fetchChannel(slug)
-    if (!channel) {
-      return
-    }
-
-    await kv.del(getLongSlugKey(channel.longSlug))
-    await kv.del(getShortSlugKey(channel.shortSlug))
-  }
-}
 
 let _channelRepo: ChannelRepo | null = null
 
 export function getOrCreateChannelRepo(): ChannelRepo {
   if (!_channelRepo) {
-    // Check for Vercel KV first (KV_URL is set automatically by Vercel)
-    if (process.env.KV_URL || process.env.KV_REST_API_URL) {
-      _channelRepo = new VercelKVChannelRepo()
-      console.log('[ChannelRepo] Using Vercel KV storage')
-    } else if (process.env.REDIS_URL) {
+    // Use Redis if REDIS_URL is set (works with Upstash Redis, Redis from Marketplace, or any Redis instance)
+    if (process.env.REDIS_URL) {
       _channelRepo = new RedisChannelRepo()
       console.log('[ChannelRepo] Using Redis storage')
     } else {
       _channelRepo = new MemoryChannelRepo()
-      console.log('[ChannelRepo] Using in-memory storage')
+      console.log('[ChannelRepo] Using in-memory storage (not recommended for production)')
     }
   }
   return _channelRepo
